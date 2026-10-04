@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, User, Trophy, Instagram, Check, CheckCircle2 } from 'lucide-react';
+import { Sparkles, User, Trophy, Flame, CheckCircle2 } from 'lucide-react';
 import { getUserNickname, setUserNickname } from '../utils/device';
 
 export default function Header({
@@ -20,47 +20,45 @@ export default function Header({
   };
 
   return (
-    <header className="fixed top-0 inset-x-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+    <header className="fixed top-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
       
-      {/* Top Main Bar */}
+      {/* Main Top Bar */}
       <div className="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         
-        {/* Instagram Logo */}
+        {/* Logo ZeioVote */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 shadow-md shadow-rose-500/20">
-            <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-              <Instagram className="w-4 h-4 text-rose-500" />
-            </div>
+          <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm text-amber-400">
+            <Flame className="w-4 h-4 fill-amber-400" />
           </div>
-          <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 bg-clip-text text-transparent">
-            ZeioGram
+          <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1">
+            ZeioVote <Sparkles className="w-3.5 h-3.5 text-amber-500 inline" />
           </span>
         </div>
 
-        {/* User Nickname Badge */}
+        {/* User Nickname Button */}
         <button
           onClick={() => {
             setNickname(getUserNickname());
             setShowNameModal(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800 hover:bg-slate-200 transition active:scale-95 shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-800 hover:bg-slate-200 transition active:scale-95 shadow-2xs"
         >
-          <User className="w-3.5 h-3.5 text-rose-500" />
+          <User className="w-3.5 h-3.5 text-indigo-600" />
           <span className="max-w-[90px] truncate">{getUserNickname() || 'Tu Apodo'}</span>
         </button>
 
       </div>
 
-      {/* Category Tabs Scrollbar */}
+      {/* Category Pills Bar */}
       <div className="max-w-md mx-auto px-4 pb-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         
-        {/* All / Feed Tab */}
+        {/* All Tab */}
         <button
           onClick={() => onTabChange('ALL')}
           className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all duration-200 active:scale-95 shrink-0 ${
             activeTab === 'ALL'
-              ? 'bg-slate-900 text-white shadow-md'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60'
           }`}
         >
           Todas
@@ -77,8 +75,8 @@ export default function Header({
               onClick={() => onTabChange(cat.name)}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all duration-200 active:scale-95 shrink-0 ${
                 isActive
-                  ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-md shadow-rose-500/20'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60'
               }`}
             >
               <span>{cat.name}</span>
@@ -94,8 +92,8 @@ export default function Header({
           onClick={() => onTabChange('RANKING')}
           className={`flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all duration-200 active:scale-95 shrink-0 ${
             activeTab === 'RANKING'
-              ? 'bg-amber-500 text-slate-950 shadow-md'
-              : 'bg-amber-50 text-amber-600 border border-amber-200'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'bg-amber-50 text-amber-600 border border-amber-200/80'
           }`}
         >
           <Trophy className="w-3.5 h-3.5" />
@@ -106,7 +104,7 @@ export default function Header({
 
       {/* Edit Nickname Modal */}
       {showNameModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200 space-y-4">
             <h3 className="text-base font-extrabold text-slate-900">Cambiar tu Apodo</h3>
             <form onSubmit={handleSaveNickname} className="space-y-4">
@@ -116,7 +114,7 @@ export default function Header({
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="Tu apodo..."
                 maxLength={25}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-rose-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:border-indigo-600"
                 autoFocus
               />
               <div className="flex gap-2">
@@ -129,7 +127,7 @@ export default function Header({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 transition shadow-md shadow-rose-500/20"
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm"
                 >
                   Guardar
                 </button>

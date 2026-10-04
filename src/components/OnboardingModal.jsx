@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, Instagram } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 import { setUserNickname } from '../utils/device';
 
 export default function OnboardingModal({ onComplete }) {
@@ -9,7 +9,7 @@ export default function OnboardingModal({ onComplete }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Por favor, escribe tu nombre para continuar.');
+      setError('Por favor, escribe tu nombre o apodo para continuar.');
       return;
     }
     setUserNickname(name);
@@ -17,28 +17,37 @@ export default function OnboardingModal({ onComplete }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-slate-100 text-center space-y-6 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border border-slate-100 text-center space-y-5 animate-in zoom-in-95 duration-200">
         
-        {/* Instagram style badge */}
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 shadow-xl shadow-rose-500/20">
-          <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
-            <Instagram className="w-8 h-8 text-rose-500" />
-          </div>
+        {/* User Check Badge */}
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+          <UserCheck className="w-7 h-7" />
         </div>
 
-        {/* Title */}
-        <div className="space-y-1.5">
+        {/* Title & Subtitle */}
+        <div className="space-y-1">
           <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-1.5">
             ¡Bienvenido/a! <Sparkles className="w-5 h-5 text-amber-500 inline" />
           </h2>
-          <p className="text-xs text-slate-500 font-medium leading-relaxed">
-            Introduce tu apodo o nombre para empezar a votar y comentar tus imágenes favoritas.
+          <p className="text-xs text-slate-500 font-medium">
+            Introduce tu apodo para votar y comentar las imágenes.
+          </p>
+        </div>
+
+        {/* Login Explanation Box */}
+        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 text-left text-[11px] text-slate-600 space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-slate-800">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>¿Cómo funciona el acceso?</span>
+          </div>
+          <p className="text-[11px] leading-relaxed text-slate-500">
+            No necesitas contraseña ni registro. Se asignará un <strong>1 voto por dispositivo</strong> vinculado a tu apodo.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <input
               type="text"
@@ -50,23 +59,19 @@ export default function OnboardingModal({ onComplete }) {
               placeholder="¿Cómo te llamas?"
               maxLength={25}
               autoFocus
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-center"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 font-semibold placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15 transition-all text-center"
             />
             {error && <p className="text-[11px] font-semibold text-rose-500 mt-1.5">{error}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full py-3.5 px-6 rounded-2xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 transition active:scale-95"
+            className="w-full py-3.5 px-6 rounded-2xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 transition active:scale-95"
           >
-            <span>Empezar a Votar</span>
+            <span>Entrar a Votar</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <p className="text-[10px] text-slate-400">
-          Tus votos y comentarios se guardarán de forma segura.
-        </p>
 
       </div>
     </div>
