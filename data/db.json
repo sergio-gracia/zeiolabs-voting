@@ -1,0 +1,17 @@
+{
+  "votes": {
+    "Relojes": {
+      "test_device_1": "Relojes/1b7099e19811c40e51b4dba7472a446f.jpg"
+    }
+  },
+  "comments": {
+    "Relojes/1b7099e19811c40e51b4dba7472a446f.jpg": [
+      {
+        "id": "c_1791130410425_6i0o5",
+        "author": "Carlos",
+        "text": "�Este reloj es brutal!",
+        "timestamp": "2026-10-04T16:13:30.425Z"
+      }
+    ]
+  }
+}
