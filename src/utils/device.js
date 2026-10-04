@@ -15,6 +15,11 @@ export function getUserNickname() {
   return localStorage.getItem('zeio_voting_nickname') || '';
 }
 
+export function hasUserNickname() {
+  const nick = localStorage.getItem('zeio_voting_nickname');
+  return Boolean(nick && nick.trim());
+}
+
 export function setUserNickname(name) {
   if (name && name.trim()) {
     localStorage.setItem('zeio_voting_nickname', name.trim());
