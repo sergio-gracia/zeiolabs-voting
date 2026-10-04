@@ -20,16 +20,15 @@ export default function Leaderboard({ onOpenModal }) {
         ]);
 
         const leaderboard = rawCategories.map((cat) => {
-          const categoryVotes = votesMap[cat.name] || {};
-          const voteCounts = {};
-
-          Object.values(categoryVotes).forEach((votedId) => {
-            voteCounts[votedId] = (voteCounts[votedId] || 0) + 1;
-          });
+          let categoryTotalVotes = 0;
 
           const rankedImages = cat.images
             .map((img) => {
               const safeId = escapeKey(img.id);
+              const imageVotes = votesMap[safeId] || {};
+              const voteCount = Object.keys(imageVotes).length;
+              categoryTotalVotes += voteCount;
+
               const rawComments = commentsMap[safeId];
               const commentList = Array.isArray(rawComments)
                 ? rawComments
@@ -39,7 +38,7 @@ export default function Leaderboard({ onOpenModal }) {
 
               return {
                 ...img,
-                voteCount: voteCounts[img.id] || 0,
+                voteCount,
                 commentCount: commentList.length
               };
             })
@@ -47,7 +46,7 @@ export default function Leaderboard({ onOpenModal }) {
 
           return {
             category: cat.name,
-            totalVotes: Object.keys(categoryVotes).length,
+            totalVotes: categoryTotalVotes,
             topImages: rankedImages
           };
         });
@@ -78,16 +77,14 @@ export default function Leaderboard({ onOpenModal }) {
     <div className="pt-24 pb-16 px-4 max-w-md mx-auto space-y-6 bg-white min-h-screen">
       
       {/* Header Banner */}
-      <div className="rounded-3xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 shadow-xl shadow-rose-500/15">
-        <div className="bg-white rounded-[22px] p-6 text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200 flex items-center justify-center mx-auto shadow-sm">
-            <Trophy className="w-6 h-6" />
-          </div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">Tabla de Clasificación</h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Las opciones más votadas por tus amigos en tiempo real.
-          </p>
+      <div className="rounded-3xl bg-slate-900 text-white p-6 text-center space-y-2 shadow-xl">
+        <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center mx-auto shadow-md">
+          <Trophy className="w-6 h-6" />
         </div>
+        <h2 className="text-xl font-black tracking-tight">Tabla de Clasificación</h2>
+        <p className="text-xs text-slate-400 font-medium">
+          Las imágenes más votadas por tus amigos en tiempo real.
+        </p>
       </div>
 
       {/* Category Filter Pills */}
@@ -96,7 +93,7 @@ export default function Leaderboard({ onOpenModal }) {
           onClick={() => setSelectedCategory('ALL')}
           className={`px-4 py-2 rounded-full text-xs font-bold transition shrink-0 ${
             selectedCategory === 'ALL'
-              ? 'bg-slate-900 text-white shadow-md'
+              ? 'bg-indigo-600 text-white shadow-md'
               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
@@ -109,7 +106,7 @@ export default function Leaderboard({ onOpenModal }) {
             onClick={() => setSelectedCategory(catName)}
             className={`px-4 py-2 rounded-full text-xs font-bold transition shrink-0 ${
               selectedCategory === catName
-                ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
+                ? 'bg-indigo-600 text-white shadow-md'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -122,26 +119,26 @@ export default function Leaderboard({ onOpenModal }) {
       {data
         .filter((catGroup) => selectedCategory === 'ALL' || catGroup.category === selectedCategory)
         .map((catGroup) => {
-          const totalCategoryVotes = catGroup.totalVotes || 1;
+          const maxVotes = catGroup.topImages[0]?.voteCount || 1;
 
           return (
-            <div key={catGroup.category} className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div key={catGroup.category} className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
               
               {/* Category Subheader */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-rose-500" />
+                  <Flame className="w-4 h-4 text-amber-500" />
                   {catGroup.category}
                 </h3>
                 <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                  {catGroup.totalVotes} votos
+                  {catGroup.totalVotes} votos totales
                 </span>
               </div>
 
               {/* Items ranking */}
               <div className="space-y-3">
                 {catGroup.topImages.map((img, index) => {
-                  const votePercentage = Math.round((img.voteCount / (totalCategoryVotes || 1)) * 100);
+                  const votePercentage = Math.round((img.voteCount / (maxVotes || 1)) * 100);
 
                   let rankBadge = (
                     <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">
@@ -198,8 +195,8 @@ export default function Leaderboard({ onOpenModal }) {
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               index === 0
-                                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600'
-                                : 'bg-rose-500'
+                                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600'
+                                : 'bg-indigo-600'
                             }`}
                             style={{ width: `${votePercentage}%` }}
                           />

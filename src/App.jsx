@@ -30,16 +30,16 @@ export default function App() {
       ]);
 
       const enrichedCategories = rawCategories.map((cat) => {
-        const categoryVotes = votesMap[cat.name] || {};
-        const userVotedImageId = categoryVotes[deviceId] || null;
-
-        const voteCounts = {};
-        Object.values(categoryVotes).forEach((votedId) => {
-          voteCounts[votedId] = (voteCounts[votedId] || 0) + 1;
-        });
+        let categoryVoteCount = 0;
 
         const enrichedImages = cat.images.map((img) => {
           const safeId = escapeKey(img.id);
+          const imageVotes = votesMap[safeId] || {};
+          const hasVoted = Boolean(imageVotes[deviceId]);
+          const voteCount = Object.keys(imageVotes).length;
+
+          if (hasVoted) categoryVoteCount++;
+
           const rawComments = commentsMap[safeId];
           const commentList = Array.isArray(rawComments)
             ? rawComments
@@ -49,15 +49,15 @@ export default function App() {
 
           return {
             ...img,
-            voteCount: voteCounts[img.id] || 0,
-            hasVoted: userVotedImageId === img.id,
+            voteCount,
+            hasVoted,
             commentCount: commentList.length
           };
         });
 
         return {
           ...cat,
-          userVotedImageId,
+          userVotedCount: categoryVoteCount,
           images: enrichedImages
         };
       });
@@ -76,27 +76,19 @@ export default function App() {
     return () => clearInterval(interval);
   }, [syncData]);
 
-  // Vote Handler
+  // Vote Handler: Allows voting as many images as desired!
   const handleVote = async (image) => {
     setCategories((prevCategories) =>
       prevCategories.map((cat) => {
         if (cat.name !== image.category) return cat;
 
-        const isCurrentlyVoted = image.hasVoted;
-        const newVotedId = isCurrentlyVoted ? null : image.id;
-
         const updatedImages = cat.images.map((img) => {
           if (img.id === image.id) {
+            const isCurrentlyVoted = img.hasVoted;
             return {
               ...img,
               hasVoted: !isCurrentlyVoted,
               voteCount: isCurrentlyVoted ? Math.max(0, img.voteCount - 1) : img.voteCount + 1
-            };
-          } else if (img.hasVoted) {
-            return {
-              ...img,
-              hasVoted: false,
-              voteCount: Math.max(0, img.voteCount - 1)
             };
           }
           return img;
@@ -104,7 +96,6 @@ export default function App() {
 
         return {
           ...cat,
-          userVotedImageId: newVotedId,
           images: updatedImages
         };
       })
@@ -114,7 +105,6 @@ export default function App() {
     syncData();
   };
 
-  // Filter images to display based on activeTab
   const getDisplayImages = () => {
     if (activeTab === 'ALL') {
       return categories.flatMap((cat) => cat.images);
@@ -124,7 +114,6 @@ export default function App() {
   };
 
   const displayImages = getDisplayImages();
-  const totalVotedCategories = categories.filter((c) => Boolean(c.userVotedImageId)).length;
 
   return (
     <div className="h-[100dvh] w-full bg-white text-slate-900 flex flex-col overflow-hidden relative">
@@ -139,15 +128,14 @@ export default function App() {
         categories={categories}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        totalVotedCategories={totalVotedCategories}
       />
 
       {/* Main Reels Vertical Feed Container */}
       <main className="flex-1 w-full h-[100dvh] overflow-y-scroll snap-y snap-mandatory bg-white no-scrollbar">
         {loading ? (
           <div className="h-full flex items-center justify-center flex-col gap-3 bg-white">
-            <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
-            <p className="text-xs font-bold text-slate-400">Cargando Reels...</p>
+            <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+            <p className="text-xs font-bold text-slate-400">Cargando la galería...</p>
           </div>
         ) : categories.length === 0 ? (
           <div className="h-full flex items-center justify-center flex-col gap-3 p-6 text-center bg-white">
@@ -167,9 +155,6 @@ export default function App() {
               image={image}
               onVote={handleVote}
               onOpenComments={(img) => setSelectedImageForComments(img)}
-              userVotedImageId={
-                categories.find((c) => c.name === image.category)?.userVotedImageId
-              }
             />
           ))
         )}
@@ -183,9 +168,6 @@ export default function App() {
             setSelectedImageForComments(null);
             syncData();
           }}
-          userVotedImageId={
-            categories.find((c) => c.name === selectedImageForComments.category)?.userVotedImageId
-          }
         />
       )}
 

@@ -1,14 +1,16 @@
 /**
  * Cloud Database Service for GitHub Pages / Static Hosting.
- * Synchronizes votes and comments across multiple mobile devices using Firebase / Cloud REST.
+ * Supports multi-voting per device across any number of images.
  */
 
-// Default free cloud Realtime Database endpoint for instant out-of-the-box sync
 const DEFAULT_CLOUD_DB = 'https://zeiolabs-voting-default-rtdb.firebaseio.com';
 
-// Local storage keys for offline cache
-const CACHE_VOTES_KEY = 'zeio_voting_cache_votes';
+const CACHE_VOTES_KEY = 'zeio_voting_cache_votes_v2';
 const CACHE_COMMENTS_KEY = 'zeio_voting_cache_comments';
+
+function escapeKey(key) {
+  return String(key).replace(/\//g, '__').replace(/\./g, '_');
+}
 
 function getLocalCache(key) {
   try {
@@ -28,11 +30,11 @@ function setLocalCache(key, value) {
 }
 
 /**
- * Fetch current global votes: { [category]: { [deviceId]: imageId } }
+ * Fetch global votes map: { [escapedImageId]: { [deviceId]: true } }
  */
 export async function getGlobalVotes() {
   try {
-    const res = await fetch(`${DEFAULT_CLOUD_DB}/votes.json`, { cache: 'no-cache' });
+    const res = await fetch(`${DEFAULT_CLOUD_DB}/votes_v2.json`, { cache: 'no-cache' });
     if (res.ok) {
       const data = await res.json();
       if (data && typeof data === 'object') {
@@ -41,50 +43,50 @@ export async function getGlobalVotes() {
       }
     }
   } catch (err) {
-    console.warn('Cloud DB offline, using local cache:', err);
+    console.warn('Cloud DB votes offline, using cache:', err);
   }
   return getLocalCache(CACHE_VOTES_KEY);
 }
 
 /**
- * Cast or toggle vote for an image
+ * Toggle vote for a specific image (Allows voting multiple images freely)
  */
 export async function castVote(category, imageId, deviceId) {
-  const votes = await getGlobalVotes();
+  const safeId = escapeKey(imageId);
+  const votesMap = await getGlobalVotes();
   
-  if (!votes[category]) {
-    votes[category] = {};
+  if (!votesMap[safeId]) {
+    votesMap[safeId] = {};
   }
 
-  const currentVote = votes[category][deviceId];
+  const hasVoted = Boolean(votesMap[safeId][deviceId]);
 
-  if (currentVote === imageId) {
-    // Unvote
-    delete votes[category][deviceId];
+  if (hasVoted) {
+    // Remove vote (unlike)
+    delete votesMap[safeId][deviceId];
   } else {
-    // Set vote
-    votes[category][deviceId] = imageId;
+    // Add vote (like)
+    votesMap[safeId][deviceId] = true;
   }
 
-  // Save to local cache immediately
-  setLocalCache(CACHE_VOTES_KEY, votes);
+  setLocalCache(CACHE_VOTES_KEY, votesMap);
 
   // Sync to Cloud DB
   try {
-    await fetch(`${DEFAULT_CLOUD_DB}/votes/${encodeURIComponent(category)}.json`, {
+    await fetch(`${DEFAULT_CLOUD_DB}/votes_v2/${safeId}.json`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(votes[category] || {})
+      body: JSON.stringify(votesMap[safeId] || {})
     });
   } catch (err) {
     console.error('Error syncing vote to cloud:', err);
   }
 
-  return votes;
+  return votesMap;
 }
 
 /**
- * Fetch comments for all images: { [imageIdEscaped]: [ { id, author, text, timestamp } ] }
+ * Fetch comments for all images
  */
 export async function getGlobalComments() {
   try {
@@ -100,13 +102,6 @@ export async function getGlobalComments() {
     console.warn('Cloud DB comments offline, using cache:', err);
   }
   return getLocalCache(CACHE_COMMENTS_KEY);
-}
-
-/**
- * Escape image ID for Firebase keys (replaces / with __)
- */
-function escapeKey(key) {
-  return String(key).replace(/\//g, '__').replace(/\./g, '_');
 }
 
 /**
@@ -130,7 +125,6 @@ export async function addComment(imageId, author, text) {
   commentsMap[safeId].push(newComment);
   setLocalCache(CACHE_COMMENTS_KEY, commentsMap);
 
-  // Sync to cloud
   try {
     await fetch(`${DEFAULT_CLOUD_DB}/comments/${safeId}.json`, {
       method: 'POST',
